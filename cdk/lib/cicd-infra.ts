@@ -23,6 +23,7 @@ export class CicdInfraStack extends cdk.Stack {
 				actionName: 'DownloadSources',
 				owner: 'imyrvold',
 				repo: 'ShopExample',
+				branch: 'main',
 				oauthToken: cdk.SecretValue.secretsManager('github-token'),
 				output: sourceArtifact
 			}),
