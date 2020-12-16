@@ -1,7 +1,8 @@
 # ================================
 # Build image
 # ================================
-FROM 515051544254.dkr.ecr.eu-west-1.amazonaws.com/swift:5.3-focal as build
+FROM public.ecr.aws/o8l5c1i1/swift:5.3-focal as build
+FROM public.ecr.aws/o8l5c1i1/swift
 
 # Install OS updates and, if needed, sqlite3
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
@@ -39,7 +40,7 @@ RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w
 # ================================
 # Run image
 # ================================
-FROM 515051544254.dkr.ecr.eu-west-1.amazonaws.com/swift:5.3-focal-slim
+FROM public.ecr.aws/o8l5c1i1/swift:5.3-focal-slim
 
 # Make sure all system packages are up to date.
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && \
