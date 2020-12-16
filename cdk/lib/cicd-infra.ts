@@ -50,7 +50,17 @@ export class CicdInfraStack extends cdk.Stack {
 				role: buildRole,
 				environment: {
 					buildImage: codebuild.LinuxBuildImage.STANDARD_4_0,
-					privileged: true
+					privileged: true,
+					environmentVariables: {
+						MONGODB: {
+							value: "mongodb",
+							type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER
+						},
+						SENDGRID_API_KEY: {
+							value: "sendgrid",
+							type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER
+						}
+					}
 				},
 				buildSpec: this.getDockerBuildSpec(repository.repositoryUri)
 			})
