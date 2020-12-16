@@ -2,7 +2,6 @@
 # Build image
 # ================================
 FROM public.ecr.aws/o8l5c1i1/swift:5.3-focal as build
-FROM public.ecr.aws/o8l5c1i1/swift
 
 # Install OS updates and, if needed, sqlite3
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
