@@ -5,6 +5,7 @@ import * as codebuild from '@aws-cdk/aws-codebuild';
 import * as ecr from '@aws-cdk/aws-ecr';
 import * as iam from '@aws-cdk/aws-iam';
 import * as pipelines from '@aws-cdk/pipelines';
+import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
 
 import { LocalDeploymentStage } from './local-deployment';
 
@@ -43,28 +44,46 @@ export class CicdInfraStack extends cdk.Stack {
 		});
 		repository.grantPullPush(buildRole);
 		
+		const mongoSecret = new secretsmanager.Secret(this, 'mongodb');
+		const sendgridSecret = new secretsmanager.Secret(this, 'sendgrid');
+		
+		const project = new codebuild.Project(this, 'DockerBuild', {
+			role: buildRole,
+			environment: {
+				buildImage: codebuild.LinuxBuildImage.STANDARD_4_0,
+				privileged: true,
+				environmentVariables: {
+					MONGODB: {
+						value: mongoSecret.secretArn
+					},
+					SENDGRID_API_KEY: {
+						value: sendgridSecret.secretArn
+					}
+				}
+			},
+			buildSpec: this.getDockerBuildSpec(repository.repositoryUri)
+		});
+				
+		project.addToRolePolicy(
+			new iam.PolicyStatement({
+				effect: iam.Effect.ALLOW,
+				actions: [
+					'secretsmanager:GetRandomPassword',
+					'secretsmanager:GetResourcePolicy',
+					'secretsmanager:GetSecretValue',
+					'secretsmanager:DescribeSecret',
+					'secretsmanager:ListSecretVersionIds'
+				],
+				resources: [mongoSecret.secretArn]
+			})
+		)
+
+		
 		const buildStage = pipeline.addStage('AppBuild');
 		buildStage.addActions(new codepipeline_actions.CodeBuildAction({
 			actionName: 'DockerBuild',
 			input: sourceArtifact,
-			project: new codebuild.Project(this, 'DockerBuild', {
-				role: buildRole,
-				environment: {
-					buildImage: codebuild.LinuxBuildImage.STANDARD_4_0,
-					privileged: true,
-					environmentVariables: {
-						MONGODB: {
-							value: "mongodb",
-							type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER
-						},
-						SENDGRID_API_KEY: {
-							value: "sendgrid",
-							type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER
-						}
-					}
-				},
-				buildSpec: this.getDockerBuildSpec(repository.repositoryUri)
-			})
+			project: project
 		}));
 		
 		// Deploy - Local
