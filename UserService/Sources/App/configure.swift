@@ -7,10 +7,13 @@ import SendGrid
 // configures your application
 public func configure(_ app: Application) throws {
     // MARK: JWT
+    print("configure 1")
     guard let jwksString = Environment.get("JWKS_KEYPAIR") else {
         fatalError("No value was found at the given public key environment 'JWKS_KEYPAIR'")
     }
+    print("configure 2")
     try app.jwt.signers.use(jwksJSON: jwksString)
+    print("configure 3")
 
     app.middleware.use(CORSMiddleware())
     app.middleware.use(ErrorMiddleware() { request, error in
@@ -50,6 +53,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateAddress())
         
     try routes(app, sendgridClient)
+    print("configure 4")
 
 //    try app.autoMigrate().wait()
 
