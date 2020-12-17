@@ -17,7 +17,7 @@ export class CdkStack extends cdk.Stack {
     });
     
     const repository = new ecr.Repository(this, 'dune-repository', {
-      repositoryName: 'dune'
+      repositoryName: 'cdk-cicd/app'
     });
     
     const taskDefinition = new ecs.FargateTaskDefinition(this, 'DuneTaskDefinition', {
