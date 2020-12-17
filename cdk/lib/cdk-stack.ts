@@ -17,14 +17,15 @@ export class CdkStack extends cdk.Stack {
     });
     
     const repository = ecr.Repository.fromRepositoryName(this, 'Repository', 'cdk-cicd/app');
-    
+    const imageTag = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION || 'local';
+
     const taskDefinition = new ecs.FargateTaskDefinition(this, 'DuneTaskDefinition', {
       cpu: 1024,
       memoryLimitMiB: 2048
     });
     
     const vaporApp = taskDefinition.addContainer('VaporApp', {
-      image: ecs.ContainerImage.fromEcrRepository(repository),
+      image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
       logging: ecs.LogDriver.awsLogs({streamPrefix: 'dune'}),
       memoryReservationMiB: 1024
     });
