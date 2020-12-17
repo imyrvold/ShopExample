@@ -7,16 +7,10 @@ import SendGrid
 // configures your application
 public func configure(_ app: Application) throws {
     // MARK: JWT
-    if app.environment != .testing {
-        let jwksFilePath = app.directory.workingDirectory + (Environment.get("JWKS_KEYPAIR_FILE") ?? "keypair.jwks")
-         guard
-             let jwks = FileManager.default.contents(atPath: jwksFilePath),
-             let jwksString = String(data: jwks, encoding: .utf8)
-             else {
-                 fatalError("Failed to load JWKS Keypair file at: \(jwksFilePath)")
-         }
-         try app.jwt.signers.use(jwksJSON: jwksString)
+    guard let jwksString = Environment.get("JWKS_KEYPAIR") else {
+        fatalError("No value was found at the given public key environment 'JWKS_KEYPAIR'")
     }
+    try app.jwt.signers.use(jwksJSON: jwksString)
 
     app.middleware.use(CORSMiddleware())
     app.middleware.use(ErrorMiddleware() { request, error in

@@ -46,6 +46,7 @@ export class CicdInfraStack extends cdk.Stack {
 		
 		const mongoSecret = new secretsmanager.Secret(this, 'mongodb');
 		const sendgridSecret = new secretsmanager.Secret(this, 'sendgrid');
+		const jwksSecret = new secretsmanager.Secret(this, 'jwkskeypair');
 		
 		const project = new codebuild.Project(this, 'DockerBuild', {
 			role: buildRole,
@@ -59,8 +60,8 @@ export class CicdInfraStack extends cdk.Stack {
 					SENDGRID_API_KEY: {
 						value: sendgridSecret.secretArn
 					},
-					JWKS_KEYPAIR_FILE: {
-						value: "keypair.jwks"
+					JWKS_KEYPAIR: {
+						value: jwksSecret.secretArn
 					}
 				}
 			},
