@@ -3,6 +3,7 @@ import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as ecs_patterns from '@aws-cdk/aws-ecs-patterns';
 import * as ecr from '@aws-cdk/aws-ecr';
+import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -24,10 +25,15 @@ export class CdkStack extends cdk.Stack {
       memoryLimitMiB: 2048
     });
     
+    const jwksSecret = new secretsmanager.Secret(this, 'jwkskeypair');
+
     const vaporApp = taskDefinition.addContainer('VaporApp', {
       image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
       logging: ecs.LogDriver.awsLogs({streamPrefix: 'dune'}),
-      memoryReservationMiB: 1024
+      memoryReservationMiB: 1024,
+      secrets: {
+        JWKS_KEYPAIR: ecs.Secret.fromSecretsManager(jwksSecret)
+      }
     });
     
     vaporApp.addPortMappings({containerPort: 8080, hostPort: 8080});
