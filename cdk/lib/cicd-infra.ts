@@ -58,6 +58,9 @@ export class CicdInfraStack extends cdk.Stack {
 					},
 					SENDGRID_API_KEY: {
 						value: sendgridSecret.secretArn
+					},
+					JWKS_KEYPAIR_FILE: {
+						value: "keypair.jwks"
 					}
 				}
 			},
