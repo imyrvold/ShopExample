@@ -18,7 +18,7 @@ public func configure(_ app: Application) throws {
     print("configure jwksString2:", jwksString2)
     let jwksString3 = jwksString2.filter { $0 != "\""}
     print("configure jwksString3:", jwksString3)
-    try app.jwt.signers.use(jwksJSON: jwksString)
+    try app.jwt.signers.use(jwksJSON: jwksString2)
     print("configure 3")
 
     app.middleware.use(CORSMiddleware())
