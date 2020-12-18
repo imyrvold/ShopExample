@@ -3,11 +3,32 @@ import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as ecs_patterns from '@aws-cdk/aws-ecs-patterns';
 import * as ecr from '@aws-cdk/aws-ecr';
-import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
+import * as iam from '@aws-cdk/aws-iam';
+import { ISecret, Secret } from '@aws-cdk/aws-secretsmanager';
+import * as secretsManager from '@aws-cdk/aws-secretsmanager';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const secretMongoDB = secretsManager.Secret.fromSecretArn(this, 'prod/service/db/mongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/db/mongodb-B76py8');
+    // const secretMongoDB = Secret.fromSecretArn(this, 'BackendPersistenceMongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/db/mongodb-B76py8');
+    const secretSendgrid = secretsManager.Secret.fromSecretArn(this, 'prod/service/sendgrid', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/sendgrid-oUZMO1');
+    // const secretSendgrid = Secret.fromSecretArn(this, 'BackendPersistenceSendgrid', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/sendgrid-oUZMO1');
+    const secretJwksKeypair = secretsManager.Secret.fromSecretArn(this, 'prod/service/jwt/jwkskeypair', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/jwt/jwkskeypair-567S6x');
+    // const secretJwksKeypair = Secret.fromSecretArn(this, 'BackendPersistenceJwksKeypair', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/jwt/jwkskeypair-567S6x');
+    
+    const taskRole = new iam.Role(this, 'BackendTaskRole', {
+        roleName: 'BackendECSTaskRole',
+        assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+        managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')
+        ]
+    });
+    secretMongoDB.grantRead(taskRole);
+    secretSendgrid.grantRead(taskRole);
+    secretJwksKeypair.grantRead(taskRole);
+
 
     const vpc = new ec2.Vpc(this, 'DuneVpc', {
       maxAzs: 3
@@ -25,14 +46,14 @@ export class CdkStack extends cdk.Stack {
       memoryLimitMiB: 2048
     });
     
-    const jwksSecret = new secretsmanager.Secret(this, 'jwkskeypair');
-
     const vaporApp = taskDefinition.addContainer('VaporApp', {
       image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
       logging: ecs.LogDriver.awsLogs({streamPrefix: 'dune'}),
       memoryReservationMiB: 1024,
       secrets: {
-        JWKS_KEYPAIR: ecs.Secret.fromSecretsManager(jwksSecret)
+        JWKS_KEYPAIR: ecs.Secret.fromSecretsManager(secretJwksKeypair),
+        MONGODB: ecs.Secret.fromSecretsManager(secretMongoDB),
+        SENDGRID_API_KEY: ecs.Secret.fromSecretsManager(secretSendgrid)
       }
     });
     
