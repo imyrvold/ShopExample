@@ -4,7 +4,6 @@ import * as ecs from '@aws-cdk/aws-ecs';
 import * as ecs_patterns from '@aws-cdk/aws-ecs-patterns';
 import * as ecr from '@aws-cdk/aws-ecr';
 import * as iam from '@aws-cdk/aws-iam';
-import { ISecret, Secret } from '@aws-cdk/aws-secretsmanager';
 import * as secretsManager from '@aws-cdk/aws-secretsmanager';
 
 export class CdkStack extends cdk.Stack {
@@ -12,11 +11,8 @@ export class CdkStack extends cdk.Stack {
     super(scope, id, props);
 
     const secretMongoDB = secretsManager.Secret.fromSecretArn(this, 'prod/service/db/mongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/db/mongodb-B76py8');
-    // const secretMongoDB = Secret.fromSecretArn(this, 'BackendPersistenceMongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/db/mongodb-B76py8');
     const secretSendgrid = secretsManager.Secret.fromSecretArn(this, 'prod/service/sendgrid', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/sendgrid-oUZMO1');
-    // const secretSendgrid = Secret.fromSecretArn(this, 'BackendPersistenceSendgrid', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/sendgrid-oUZMO1');
     const secretJwksKeypair = secretsManager.Secret.fromSecretArn(this, 'prod/service/jwt/jwkskeypair', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/jwt/jwkskeypair-567S6x');
-    // const secretJwksKeypair = Secret.fromSecretArn(this, 'BackendPersistenceJwksKeypair', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/jwt/jwkskeypair-567S6x');
     
     const taskRole = new iam.Role(this, 'BackendTaskRole', {
         roleName: 'BackendECSTaskRole',
@@ -66,7 +62,7 @@ export class CdkStack extends cdk.Stack {
     
     mongo.addPortMappings({containerPort: 27017, hostPort: 27017});
     
-    new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'DuneFargateService', {
+    const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'DuneFargateService', {
       serviceName: 'DuneService',
       cluster: cluster,
       cpu: 512,
@@ -75,5 +71,8 @@ export class CdkStack extends cdk.Stack {
       publicLoadBalancer: true
     });
     
+    service.targetGroup.configureHealthCheck({
+      path: '/users/health'
+    });
   }
 }
