@@ -72,7 +72,7 @@ export class CdkStack extends cdk.Stack {
     });
     
     service.targetGroup.configureHealthCheck({
-      path: '/users/health'
+      path: '/v1/users/health'
     });
   }
 }
