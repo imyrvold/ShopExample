@@ -14,7 +14,8 @@ public func configure(_ app: Application) throws {
 //    guard let jwksString = Environment.get("JWKS_KEYPAIR") else {
 //        fatalError("No value was found at the given public key environment 'JWKS_KEYPAIR'")
 //    }
-    print("configure 2")
+    let jwksString2 = Environment.get("JWKS_KEYPAIR")
+    print("configure jwksString2:", jwksString2)
     try app.jwt.signers.use(jwksJSON: jwksString)
     print("configure 3")
 
@@ -46,7 +47,6 @@ public func configure(_ app: Application) throws {
     guard let connectionString = Environment.get("MONGODB") else {
         fatalError("No MongoDB connection string is available in .env")
     }
-    print("configure connectionString:", connectionString)
 
     app.databases.use(try .mongo(connectionString: connectionString), as: .mongo)
     
