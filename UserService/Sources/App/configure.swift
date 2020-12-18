@@ -16,7 +16,7 @@ public func configure(_ app: Application) throws {
 //    }
     guard let jwksString2 = Environment.get("JWKS_KEYPAIR") else { fatalError("No value was found at the given public key environment 2 'JWKS_KEYPAIR'") }
     print("configure jwksString2:", jwksString2)
-    guard let jwksString3 = jwksString2.filter { $0 != "\"" } else { fatalError("No value was found at the given public key environment 3 'JWKS_KEYPAIR'") }
+    let jwksString3 = jwksString2.filter { $0 != "\""}
     print("configure jwksString3:", jwksString3)
     try app.jwt.signers.use(jwksJSON: jwksString)
     print("configure 3")
