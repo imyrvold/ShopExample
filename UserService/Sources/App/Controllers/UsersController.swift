@@ -6,7 +6,6 @@ final class UsersController: RouteCollection {
         routes.get("profile", use: profile)
         routes.patch("profile", use: save)
         routes.delete("user", use: delete)
-        print("Add something that will trigger a new build")
     }
     
     func profile(_ request: Request) throws -> EventLoopFuture<UserSuccessResponse> {
