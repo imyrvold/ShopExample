@@ -109,7 +109,7 @@ export class UserServiceCicdInfraStack extends cdk.Stack {
 					commands: [
 						'echo Build started on `date`',
 						'echo Building the Docker image...',
-						`docker build -f Dockerfile -t ${repositoryUri}:$CODEBUILD_RESOLVED_SOURCE_VERSION .`
+						`docker build -f Dockerfile_UserService -t ${repositoryUri}:$CODEBUILD_RESOLVED_SOURCE_VERSION .`
 					]
 				},
 				post_build: {
