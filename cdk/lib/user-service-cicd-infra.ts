@@ -9,7 +9,7 @@ import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
 
 import { LocalDeploymentStage } from './local-deployment';
 
-export class CicdInfraStack extends cdk.Stack {
+export class UserServiceCicdInfraStack extends cdk.Stack {
 	constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
 		super(scope, id, props)
 		
@@ -24,7 +24,7 @@ export class CicdInfraStack extends cdk.Stack {
 				actionName: 'DownloadSources',
 				owner: 'imyrvold',
 				repo: 'ShopExample',
-				branch: 'main',
+				branch: 'dev',
 				oauthToken: cdk.SecretValue.secretsManager('github-token'),
 				output: sourceArtifact
 			}),
@@ -37,7 +37,7 @@ export class CicdInfraStack extends cdk.Stack {
 		});
 		
 		// Build and Publish application artifacts
-		const repository = new ecr.Repository(this, 'Repository', { repositoryName: 'cdk-cicd/app'});
+		const repository = new ecr.Repository(this, 'Repository', { repositoryName: 'cdk-cicd/user-manager'});
 		
 		const buildRole = new iam.Role(this, 'DockerBuildRole', {
 			assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com')
@@ -109,7 +109,7 @@ export class CicdInfraStack extends cdk.Stack {
 					commands: [
 						'echo Build started on `date`',
 						'echo Building the Docker image...',
-						`docker build -f Dockerfile_UserService -t ${repositoryUri}:$CODEBUILD_RESOLVED_SOURCE_VERSION UserService/`
+						`docker build -f Dockerfile -t ${repositoryUri}:$CODEBUILD_RESOLVED_SOURCE_VERSION .`
 					]
 				},
 				post_build: {

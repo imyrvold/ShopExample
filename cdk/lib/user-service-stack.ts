@@ -1,13 +1,13 @@
 import * as cdk from '@aws-cdk/core';
-import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as ecs_patterns from '@aws-cdk/aws-ecs-patterns';
 import * as ecr from '@aws-cdk/aws-ecr';
 import * as iam from '@aws-cdk/aws-iam';
 import * as secretsManager from '@aws-cdk/aws-secretsmanager';
+import { ShopStackProps } from './infra-cdk-stack';
 
-export class CdkStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+export class UserServiceStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props: ShopStackProps) {
     super(scope, id, props);
 
     const secretMongoDB = secretsManager.Secret.fromSecretArn(this, 'prod/service/db/mongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/db/mongodb-B76py8');
@@ -25,16 +25,8 @@ export class CdkStack extends cdk.Stack {
     secretSendgrid.grantRead(taskRole);
     secretJwksKeypair.grantRead(taskRole);
 
-
-    const vpc = new ec2.Vpc(this, 'DuneVpc', {
-      maxAzs: 3
-    });
     
-    const cluster = new ecs.Cluster(this, 'DuneCluster', {
-      vpc: vpc
-    });
-    
-    const repository = ecr.Repository.fromRepositoryName(this, 'Repository', 'cdk-cicd/app');
+    const repository = ecr.Repository.fromRepositoryName(this, 'Repository', 'cdk-cicd/user-manager');
     const imageTag = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION || 'local';
 
     const taskDefinition = new ecs.FargateTaskDefinition(this, 'DuneTaskDefinition', {
@@ -44,7 +36,7 @@ export class CdkStack extends cdk.Stack {
     
     const vaporApp = taskDefinition.addContainer('VaporApp', {
       image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
-      logging: ecs.LogDriver.awsLogs({streamPrefix: 'dune'}),
+      logging: ecs.LogDriver.awsLogs({streamPrefix: 'user'}),
       memoryReservationMiB: 1024,
       secrets: {
         JWKS_KEYPAIR: ecs.Secret.fromSecretsManager(secretJwksKeypair),
@@ -62,9 +54,9 @@ export class CdkStack extends cdk.Stack {
     
     mongo.addPortMappings({containerPort: 27017, hostPort: 27017});
     
-    const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'DuneFargateService', {
-      serviceName: 'DuneService',
-      cluster: cluster,
+    const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'UserManagerFargateService', {
+      serviceName: 'UserManagerService',
+      cluster: props.cluster,
       cpu: 512,
       desiredCount: 1,
       taskDefinition: taskDefinition,
