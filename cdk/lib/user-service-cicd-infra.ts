@@ -17,6 +17,7 @@ export class UserServiceCicdInfraStack extends cdk.Stack {
 		const cdkOutputArtifact = new codepipeline.Artifact();
 		
 		const pipeline = new pipelines.CdkPipeline(this, 'CdkPipeline', {
+			crossAccountKeys: false,
 			pipelineName: 'cdk-cdkpipeline',
 			cloudAssemblyArtifact: cdkOutputArtifact,
 			
