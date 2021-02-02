@@ -45,48 +45,30 @@ final class AuthController: RouteCollection {
     }
     
     func login(_ request: Request) throws -> EventLoopFuture<LoginResponse> {
-        print("AuthController login 1")
         let data = try request.content.decode(LoginInput.self)
-        print("AuthController login 2")
 
         return User.query(on: request.db).filter(\.$email == data.email).all().flatMap { users in
-            print("AuthController login 3")
             guard users.count > 0, let user = users.first, let userId = user.id else {
                 return request.eventLoop.makeFailedFuture(Abort(.unauthorized))
             }
-            print("AuthController login 4")
 
             var check = false
             do {
-                print("AuthController login 5")
                 check = try Bcrypt.verify(data.password, created: user.password)
-                print("AuthController login 6")
-            } catch {
-                print("AuthController login 7")
-            }
-            print("AuthController login 8")
+            } catch {}
             if check {
-                print("AuthController login 9")
                 let userPayload = Payload(id: userId, email: user.email)
-                print("AuthController login 10")
                 do {
-                    print("AuthController login 11")
                     let accessToken = try request.application.jwt.signers.sign(userPayload)
-                    print("AuthController login 12")
                     let refreshPayload = RefreshToken(user: user)
-                    print("AuthController login 13")
                     let refreshToken = try request.application.jwt.signers.sign(refreshPayload)
-                    print("AuthController login 14")
                     let userResponse = UserResponse(user: user)
-                    print("AuthController login 15")
-
+                    
                     return user.save(on: request.db).transform(to: LoginResponse(accessToken: accessToken, refreshToken: refreshToken, user: userResponse))
                 } catch {
-                    print("AuthController login 16")
                     return request.eventLoop.makeFailedFuture(Abort(.internalServerError))
                 }
             } else {
-                print("AuthController login 17")
                 return request.eventLoop.makeFailedFuture(Abort(.unauthorized))
             }
         }

@@ -7,7 +7,7 @@ import SendGrid
 // configures your application
 public func configure(_ app: Application) throws {
     // MARK: JWT
-    guard let jwksString = Environment.get("JWKS_KEYPAIR") else { fatalError("No value was found at the given public key environment 2 'JWKS_KEYPAIR'") }
+    guard let jwksString = Environment.get("JWKS_KEYPAIR") else { fatalError("No value was found at the given public key environment 'JWKS_KEYPAIR'") }
     try app.jwt.signers.use(jwksJSON: jwksString)
 
     app.middleware.use(CORSMiddleware())
