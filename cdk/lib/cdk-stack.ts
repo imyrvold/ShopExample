@@ -10,7 +10,7 @@ export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const secretMongoDB = secretsManager.Secret.fromSecretArn(this, 'prod/service/db/mongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/db/mongodb-B76py8');
+    const secretMongoDB = secretsManager.Secret.fromSecretArn(this, 'prod/service/UserService/mongodb', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/UserService/mongodb-ZqUJev');
     const secretSendgrid = secretsManager.Secret.fromSecretArn(this, 'prod/service/sendgrid', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/sendgrid-oUZMO1');
     const secretJwksKeypair = secretsManager.Secret.fromSecretArn(this, 'prod/service/jwt/jwkskeypair', 'arn:aws:secretsmanager:eu-west-1:515051544254:secret:prod/service/jwt/jwkskeypair-567S6x');
     
